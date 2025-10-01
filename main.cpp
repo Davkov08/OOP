@@ -42,10 +42,9 @@ void generateGradient(Image &img) {
             double dist = sqrt(dx * dx + dy * dy);
             double ratio = dist / maxDist;
 
-            // Gradient from red (center) to black (edges)
             int r = (int)(255 * (1 - ratio));
-            int g = (int)(200 * (1 - ratio));  // less green
-            int b = (int)(100 * (1 - ratio));  // more blue at edges
+            int g = (int)(200 * (1 - ratio));  
+            int b = (int)(100 * (1 - ratio));  
 
             img.getPixel(x, y).color = {r, g, b};
         }
@@ -75,3 +74,4 @@ int main() {
 
     return 0;
 }
+
