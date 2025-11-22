@@ -1,0 +1,167 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+class MyVec {
+private:
+    int size;
+    int capacity;
+    int* elements;
+
+    void resizeUp() {
+        int novo = capacity * 2;
+        int* tmp = new int[novo];
+        for (int i = 0; i < size; i++)
+            tmp[i] = elements[i];
+        delete[] elements;
+        elements = tmp;
+        capacity = novo;
+    }
+
+    void resizeDown() {
+        if (capacity <= 4)
+            return;
+        if (size * 4 > capacity)
+            return;
+
+        int novo = capacity / 2;
+        int* tmp = new int[novo];
+        for (int i = 0; i < size; i++)
+            tmp[i] = elements[i];
+        delete[] elements;
+        elements = tmp;
+        capacity = novo;
+    }
+
+public:
+    MyVec(int size = 0, int value = 0) {
+        capacity = 4;
+        while (size > capacity)
+            capacity *= 2;
+
+        elements = new int[capacity];
+        this->size = size;
+
+        for (int i = 0; i < size; i++)
+            elements[i] = value;
+    }
+
+    ~MyVec() {
+        delete[] elements;
+    }
+
+    MyVec(const MyVec& other) {
+        size = other.size;
+        capacity = other.capacity;
+        elements = new int[capacity];
+        for (int i = 0; i < size; i++)
+            elements[i] = other.elements[i];
+    }
+
+    MyVec& operator=(const MyVec& other) {
+        if (this != &other) {
+            delete[] elements;
+            size = other.size;
+            capacity = other.capacity;
+            elements = new int[capacity];
+            for (int i = 0; i < size; i++)
+                elements[i] = other.elements[i];
+        }
+        return *this;
+    }
+
+    void push(int val) {
+        if (size == capacity)
+            resizeUp();
+        elements[size] = val;
+        size++;
+    }
+
+    void pop() {
+        if (size > 0) {
+            size--;
+            resizeDown();
+        }
+    }
+
+    void print() {
+        cout << "C: " << capacity << " S: " << size << " : ";
+        for (int i = 0; i < size; i++)
+            cout << elements[i] << " ";
+        cout << "\n";
+    }
+
+    int operator[](int i) {
+        if (i < 0 || i >= size)
+            return 42;
+        return elements[i];
+    }
+
+    int front() {
+        return (size > 0 ? elements[0] : 42);
+    }
+
+    int back() {
+        return (size > 0 ? elements[size - 1] : 42);
+    }
+
+    int* data() {
+        return elements;
+    }
+
+    void sort() {
+        for (int i = 0; i < size - 1; i++) {
+            bool swapped = false;
+            for (int j = 0; j < size - 1 - i; j++) {
+                if (elements[j] > elements[j + 1]) {
+                    swap(elements[j], elements[j + 1]);
+                    swapped = true;
+                }
+            }
+            if (!swapped) break;
+        }
+    }
+
+    MyVec operator+(const MyVec& other) {
+        MyVec result(size + other.size);
+
+        for (int i = 0; i < size; i++)
+            result.elements[i] = elements[i];
+
+        for (int i = 0; i < other.size; i++)
+            result.elements[size + i] = other.elements[i];
+
+        return result;
+    }
+};
+
+
+int main() {
+    MyVec v(3, 123);
+    v.print();
+    cout<<"\n";
+
+    v.push(999);
+    v.push(777);
+    v.pop();
+    v.push(777);
+    v.push(333);
+    v.push(122);
+    v.push(10112554);
+
+    v.print();
+    cout << "v[6] = " << v[6] << "\n";
+    cout << "front: " << v.front() << "\n";
+    cout << "back: " << v.back() << "\n";
+    cout << "data pointer: " << v.data() << "\n";
+
+    v.sort();
+    v.print();
+
+    MyVec b(2, 5);   // [5,5]
+    MyVec a(3, 7);   // [7,7,7]
+    MyVec c = a + b; // [5,5,7,7,7]
+    c.sort();
+    c.print();
+
+    return 0;
+}
