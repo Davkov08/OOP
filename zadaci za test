@@ -1,0 +1,524 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+class IceCream {
+private:
+    char* name;                 
+    char composition[101];     
+    double price;
+    int discount;               
+
+    void copyName(const char* src) {
+        delete[] name;
+        name = new char[strlen(src) + 1];
+        strcpy(name, src);
+    }
+
+public:
+    IceCream() {
+        name = new char[1];
+        name[0] = '\0';
+        composition[0] = '\0';
+        price = 0;
+        discount = 0;
+    }
+
+    IceCream(const char* n, const char* comp, double p, int d = 0) {
+        name = new char[1];     // за да може delete[] во copyName
+        name[0] = '\0';
+        copyName(n);
+
+        strncpy(composition, comp, 100);
+        composition[100] = '\0';
+
+        price = p;
+        discount = d;
+    }
+
+    IceCream(const IceCream& other) {
+        name = new char[1];
+        name[0] = '\0';
+        copyName(other.name);
+
+        strcpy(composition, other.composition);
+        price = other.price;
+        discount = other.discount;
+    }
+
+    IceCream& operator=(const IceCream& other) {
+        if (this != &other) {
+            copyName(other.name);
+            strcpy(composition, other.composition);
+            price = other.price;
+            discount = other.discount;
+        }
+        return *this;
+    }
+
+    ~IceCream() {
+        delete[] name;
+    }
+
+    IceCream& operator++() {
+        discount += 5;
+        if (discount > 100) discount = 100;
+        return *this;
+    }
+
+    IceCream operator+(const char* extra) const {
+        char newName[1024];
+        strcpy(newName, name);
+        strcat(newName, " + ");
+        strcat(newName, extra);
+
+        IceCream result(newName, composition, price + 10, discount);
+        return result;
+    }
+
+    void setDiscount(int d) {
+        if (d >= 0 && d <= 100) {
+            discount = d;
+        }
+    }
+
+    void setName(const char* n) {
+        copyName(n);
+    }
+
+    friend ostream& operator<<(ostream& os, const IceCream& ice) {
+        os << ice.name << ": " << ice.composition << " ";
+        os << fixed << setprecision(2) << ice.price;
+
+        if (ice.discount > 0) {
+            double discounted =
+                ice.price * (100 - ice.discount) / 100.0;
+            os << " [" << fixed << setprecision(2) << discounted << "]";
+        }
+        return os;
+    }
+};
+
+class IceCreamShop {
+private:
+    char shopName[51];
+    IceCream* arr;
+    int count;
+
+    void resize() {
+        IceCream* tmp = new IceCream[count + 1];
+        for (int i = 0; i < count; i++) {
+            tmp[i] = arr[i];
+        }
+        delete[] arr;
+        arr = tmp;
+    }
+
+public:
+    IceCreamShop() {
+        shopName[0] = '\0';
+        arr = nullptr;
+        count = 0;
+    }
+
+    IceCreamShop(const char* name) {
+        strncpy(shopName, name, 50);
+        shopName[50] = '\0';
+        arr = nullptr;
+        count = 0;
+    }
+
+    ~IceCreamShop() {
+        delete[] arr;
+    }
+
+    IceCreamShop& operator+=(const IceCream& ice) {
+        resize();
+        arr[count] = ice;
+        count++;
+        return *this;
+    }
+
+    friend ostream& operator<<(ostream& os, const IceCreamShop& shop) {
+        os << shop.shopName << endl;
+        for (int i = 0; i < shop.count; i++) {
+            os << shop.arr[i] << endl;
+        }
+        return os;
+    }
+};
+
+int main() {
+    IceCream ice1("Vanilla", "milk, sugar, vanilla", 2.5);
+    IceCream ice2("Chocolate", "cocoa, milk, sugar", 3.0, 10);
+
+    cout << ice1 << endl;
+    cout << ice2 << endl;
+
+    ++ice2;
+    cout << ice2 << endl;
+
+    IceCream ice3 = ice1 + "with nuts";
+    cout << ice3 << endl;
+
+    ice3.setDiscount(20);
+    ice3.setName("Special Vanilla");
+    cout << ice3 << endl;
+
+    IceCreamShop shop("Sweet Corner");
+    shop += ice1;
+    shop += ice2;
+    shop += ice3;
+
+    cout << shop << endl;
+
+    return 0;
+}
+---------------------------------------------------------------------------------------------------
+
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+enum Extension { txt, pdf, exe };
+
+class File {
+    char* name;
+    Extension ext;
+    char* owner;
+    int size;
+
+    void copy(const File& f) {
+        name = new char[strlen(f.name) + 1];
+        strcpy(name, f.name);
+
+        owner = new char[strlen(f.owner) + 1];
+        strcpy(owner, f.owner);
+
+        ext = f.ext;
+        size = f.size;
+    }
+
+public:
+    File() {
+        name = new char[1];
+        name[0] = '\0';
+        owner = new char[1];
+        owner[0] = '\0';
+        ext = txt;
+        size = 0;
+    }
+
+    File(const char* n, Extension e, const char* o, int s) {
+        name = new char[strlen(n) + 1];
+        strcpy(name, n);
+
+        owner = new char[strlen(o) + 1];
+        strcpy(owner, o);
+
+        ext = e;
+        size = s;
+    }
+
+    File(const File& f) {
+        copy(f);
+    }
+
+    ~File() {
+        delete[] name;
+        delete[] owner;
+    }
+
+    File& operator=(const File& f) {
+        if (this != &f) {
+            delete[] name;
+            delete[] owner;
+            copy(f);
+        }
+        return *this;
+    }
+
+    bool equals(const File& f) const {
+        return strcmp(name, f.name) == 0 &&
+               strcmp(owner, f.owner) == 0 &&
+               ext == f.ext;
+    }
+
+    bool equalsType(const File& f) const {
+        return strcmp(name, f.name) == 0 &&
+               ext == f.ext;
+    }
+
+    void print() const {
+        cout << name << ".";
+        if (ext == txt) cout << "txt";
+        else if (ext == pdf) cout << "pdf";
+        else cout << "exe";
+        cout << " " << owner << " " << size << "MB" << endl;
+    }
+};
+
+class Folder {
+    char* name;
+    int count;
+    File* files;
+
+public:
+    Folder(const char* n) {
+        name = new char[strlen(n) + 1];
+        strcpy(name, n);
+        count = 0;
+        files = nullptr;
+    }
+
+    ~Folder() {
+        delete[] name;
+        delete[] files;
+    }
+
+    void add(const File& f) {
+        File* temp = new File[count + 1];
+        for (int i = 0; i < count; i++)
+            temp[i] = files[i];
+        temp[count] = f;
+        delete[] files;
+        files = temp;
+        count++;
+    }
+
+    void remove(const File& f) {
+        for (int i = 0; i < count; i++) {
+            if (files[i].equals(f)) {
+                File* temp = new File[count - 1];
+                int idx = 0;
+                for (int j = 0; j < count; j++) {
+                    if (j != i)
+                        temp[idx++] = files[j];
+                }
+                delete[] files;
+                files = temp;
+                count--;
+                return;
+            }
+        }
+    }
+
+    void print() const {
+        cout << "Folder: " << name << endl;
+        for (int i = 0; i < count; i++)
+            files[i].print();
+    }
+};
+int main() {
+    File f1("document", txt, "Jovan", 5);
+    File f2("book", pdf, "Ana", 12);
+    File f3("program", exe, "Marko", 20);
+    File f4("document", txt, "Jovan", 5);
+    File f5("document", txt, "Petar", 8);
+
+    Folder folder("MyFolder");
+
+    folder.add(f1);
+    folder.add(f2);
+    folder.add(f3);
+
+    cout << "Initial folder content:" << endl;
+    folder.print();
+    cout << endl;
+
+    cout << "Testing equals (f1 vs f4): ";
+    cout << (f1.equals(f4) ? "true" : "false") << endl;
+
+    cout << "Testing equals (f1 vs f5): ";
+    cout << (f1.equals(f5) ? "true" : "false") << endl;
+
+    cout << "Testing equalsType (f1 vs f5): ";
+    cout << (f1.equalsType(f5) ? "true" : "false") << endl;
+
+    cout << "Removing f1..." << endl;
+    folder.remove(f1);
+
+    cout << "Folder content after remove:" << endl;
+    folder.print();
+    cout << endl;
+
+    cout << "Adding f4..." << endl;
+    folder.add(f4);
+
+    cout << "Final folder content:" << endl;
+    folder.print();
+
+    return 0;
+}
+--------------------------------------------------------------------------
+
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+enum Tip { LINUX, UNIX, WINDOWS };
+
+class OperativenSistem {
+    char* ime;
+    float verzija;
+    Tip tip;
+    float golemina;
+
+    void copy(const OperativenSistem& o) {
+        ime = new char[strlen(o.ime) + 1];
+        strcpy(ime, o.ime);
+        verzija = o.verzija;
+        tip = o.tip;
+        golemina = o.golemina;
+    }
+
+public:
+    OperativenSistem() {
+        ime = new char[1];
+        ime[0] = '\0';
+        verzija = 0;
+        tip = LINUX;
+        golemina = 0;
+    }
+
+    OperativenSistem(const char* i, float v, Tip t, float g) {
+        ime = new char[strlen(i) + 1];
+        strcpy(ime, i);
+        verzija = v;
+        tip = t;
+        golemina = g;
+    }
+
+    OperativenSistem(const OperativenSistem& o) {
+        copy(o);
+    }
+
+    ~OperativenSistem() {
+        delete[] ime;
+    }
+
+    OperativenSistem& operator=(const OperativenSistem& o) {
+        if (this != &o) {
+            delete[] ime;
+            copy(o);
+        }
+        return *this;
+    }
+
+    bool ednakviSe(const OperativenSistem& o) const {
+        return strcmp(ime, o.ime) == 0 &&
+               verzija == o.verzija &&
+               tip == o.tip &&
+               golemina == o.golemina;
+    }
+
+    int sporediVerzija(const OperativenSistem& o) const {
+        if (verzija == o.verzija) return 0;
+        if (o.verzija > verzija) return -1;
+        return 1;
+    }
+
+    bool istaFamilija(const OperativenSistem& o) const {
+        return strcmp(ime, o.ime) == 0 && tip == o.tip;
+    }
+
+    void pecati() const {
+        cout << "OS: " << ime << " Version: " << verzija << " Type: ";
+        if (tip == LINUX) cout << "LINUX";
+        else if (tip == UNIX) cout << "UNIX";
+        else cout << "WINDOWS";
+        cout << " Size: " << golemina << "GB" << endl;
+    }
+};
+
+class Repozitorium {
+    char ime[20];
+    OperativenSistem* sistemi;
+    int n;
+
+public:
+    Repozitorium(const char* i) {
+        strcpy(ime, i);
+        sistemi = nullptr;
+        n = 0;
+    }
+
+    ~Repozitorium() {
+        delete[] sistemi;
+    }
+
+    void dodadi(const OperativenSistem& nov) {
+        for (int i = 0; i < n; i++) {
+            if (sistemi[i].istaFamilija(nov)) {
+                if (sistemi[i].sporediVerzija(nov) == -1) {
+                    sistemi[i] = nov;
+                    return;
+                }
+            }
+        }
+        OperativenSistem* temp = new OperativenSistem[n + 1];
+        for (int i = 0; i < n; i++)
+            temp[i] = sistemi[i];
+        temp[n] = nov;
+        delete[] sistemi;
+        sistemi = temp;
+        n++;
+    }
+
+    void izbrishi(const OperativenSistem& os) {
+        for (int i = 0; i < n; i++) {
+            if (sistemi[i].ednakviSe(os)) {
+                OperativenSistem* temp = new OperativenSistem[n - 1];
+                int idx = 0;
+                for (int j = 0; j < n; j++) {
+                    if (j != i)
+                        temp[idx++] = sistemi[j];
+                }
+                delete[] sistemi;
+                sistemi = temp;
+                n--;
+                return;
+            }
+        }
+    }
+
+    void pecatiOperativniSistemi() const {
+        cout << "Repository: " << ime << endl;
+        for (int i = 0; i < n; i++)
+            sistemi[i].pecati();
+    }
+};
+int main() {
+    OperativenSistem os1("Ubuntu", 20.04, LINUX, 4.5);
+    OperativenSistem os2("Ubuntu", 22.04, LINUX, 5.0);
+    OperativenSistem os3("Windows", 10, WINDOWS, 15.0);
+    OperativenSistem os4("Windows", 11, WINDOWS, 18.0);
+    OperativenSistem os5("Ubuntu", 20.04, LINUX, 4.5);
+
+    Repozitorium repo("FINKI-Cloud");
+
+    repo.dodadi(os1);
+    repo.dodadi(os3);
+
+    cout << "Initial repository:" << endl;
+    repo.pecatiOperativniSistemi();
+    cout << endl;
+
+    repo.dodadi(os2);
+
+    cout << "After adding newer Ubuntu:" << endl;
+    repo.pecatiOperativniSistemi();
+    cout << endl;
+
+    repo.dodadi(os4);
+
+    cout << "After adding Windows 11:" << endl;
+    repo.pecatiOperativniSistemi();
+    cout << endl;
+
+    repo.izbrishi(os5);
+
+    cout << "After deleting Ubuntu 20.04:" << endl;
+    repo.pecatiOperativniSistemi();
+
+    return 0;
+}
